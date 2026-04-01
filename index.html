@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TASKS</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0e0e0e;
+    --surface: #161616;
+    --border: #2a2a2a;
+    --accent: #e8ff4f;
+    --accent2: #ff4f4f;
+    --text: #e8e8e8;
+    --muted: #555;
+    --done: #2a3a1a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 1rem 4rem;
+  }
+
+  header {
+    width: 100%;
+    max-width: 680px;
+    padding: 3rem 0 1.5rem;
+    border-bottom: 2px solid var(--accent);
+    margin-bottom: 2.5rem;
+    position: relative;
+  }
+
+  header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(4rem, 12vw, 7rem);
+    letter-spacing: 0.05em;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  header p {
+    color: var(--muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-top: 0.4rem;
+  }
+
+  #counter {
+    position: absolute;
+    top: 3rem;
+    right: 0;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 5rem;
+    color: var(--border);
+    line-height: 1;
+    letter-spacing: 0.05em;
+    transition: color 0.3s;
+  }
+
+  .input-row {
+    width: 100%;
+    max-width: 680px;
+    display: flex;
+    gap: 0;
+    margin-bottom: 2rem;
+  }
+
+  #task-input {
+    flex: 1;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-right: none;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem;
+    padding: 0.9rem 1.2rem;
+    outline: none;
+    transition: border-color 0.2s;
+    letter-spacing: 0.03em;
+  }
+
+  #task-input:focus {
+    border-color: var(--accent);
+  }
+
+  #task-input::placeholder {
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.75rem;
+  }
+
+  #add-btn {
+    background: var(--accent);
+    color: #000;
+    border: 2px solid var(--accent);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 0.1em;
+    padding: 0.9rem 1.6rem;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+
+  #add-btn:hover {
+    background: #000;
+    color: var(--accent);
+  }
+
+  #add-btn:active {
+    transform: scale(0.97);
+  }
+
+  #task-list {
+    width: 100%;
+    max-width: 680px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .task-item {
+    display: flex;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    padding: 1rem 1.2rem;
+    gap: 1rem;
+    animation: slideIn 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .task-item:last-child {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .task-item::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--accent);
+    transform: scaleY(0);
+    transition: transform 0.2s;
+    transform-origin: bottom;
+  }
+
+  .task-item:hover::before {
+    transform: scaleY(1);
+  }
+
+  .task-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    color: var(--muted);
+    min-width: 2rem;
+    line-height: 1;
+    letter-spacing: 0.05em;
+  }
+
+  .task-text {
+    flex: 1;
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+    line-height: 1.5;
+  }
+
+  .del-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    padding: 0.3rem 0.7rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+
+  .del-btn:hover {
+    border-color: var(--accent2);
+    color: var(--accent2);
+    background: rgba(255, 79, 79, 0.08);
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes slideOut {
+    from { opacity: 1; transform: translateX(0); max-height: 100px; }
+    to { opacity: 0; transform: translateX(20px); max-height: 0; padding: 0; border-width: 0; }
+  }
+
+  .removing {
+    animation: slideOut 0.25s ease forwards;
+  }
+
+  #empty-msg {
+    width: 100%;
+    max-width: 680px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 3rem 0;
+    display: none;
+  }
+
+  #empty-msg .big {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3rem;
+    color: var(--border);
+    display: block;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.1em;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(2rem);
+    background: var(--accent);
+    color: #000;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.6rem 1.4rem;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>TASKS</h1>
+  <p>Python To-Do · localhost</p>
+  <span id="counter">00</span>
+</header>
+
+<div class="input-row">
+  <input id="task-input" type="text" placeholder="What needs to be done?" maxlength="200" />
+  <button id="add-btn">+ Add</button>
+</div>
+
+<div id="task-list"></div>
+<div id="empty-msg">
+  <span class="big">CLEAR</span>
+  Nothing on the list
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const listEl = document.getElementById('task-list');
+  const emptyEl = document.getElementById('empty-msg');
+  const counterEl = document.getElementById('counter');
+  const inputEl = document.getElementById('task-input');
+  const addBtn = document.getElementById('add-btn');
+  const toastEl = document.getElementById('toast');
+  let toastTimer;
+
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2000);
+  }
+
+  function updateCounter(n) {
+    counterEl.textContent = String(n).padStart(2, '0');
+    counterEl.style.color = n > 0 ? '#2a2a2a' : '#1a1a1a';
+  }
+
+  function render(tasks) {
+    listEl.innerHTML = '';
+    tasks.forEach((task, i) => {
+      const item = document.createElement('div');
+      item.className = 'task-item';
+      item.dataset.index = i;
+      item.innerHTML = `
+        <span class="task-num">${String(i + 1).padStart(2, '0')}</span>
+        <span class="task-text">${escapeHtml(task)}</span>
+        <button class="del-btn" data-index="${i}">Remove</button>
+      `;
+      listEl.appendChild(item);
+    });
+    emptyEl.style.display = tasks.length === 0 ? 'block' : 'none';
+    updateCounter(tasks.length);
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  async function fetchTasks() {
+    const res = await fetch('/tasks');
+    const tasks = await res.json();
+    render(tasks);
+  }
+
+  async function addTask() {
+    const text = inputEl.value.trim();
+    if (!text) { inputEl.focus(); return; }
+    inputEl.value = '';
+    const res = await fetch('/tasks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ task: text })
+    });
+    const data = await res.json();
+    render(data.tasks);
+    showToast('Task added');
+  }
+
+  async function deleteTask(index) {
+    const item = listEl.querySelector(`[data-index="${index}"]`);
+    if (item) {
+      item.classList.add('removing');
+      await new Promise(r => setTimeout(r, 240));
+    }
+    const res = await fetch(`/tasks/${index}`, { method: 'DELETE' });
+    const data = await res.json();
+    render(data.tasks);
+    showToast('Task removed');
+  }
+
+  addBtn.addEventListener('click', addTask);
+  inputEl.addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
+
+  listEl.addEventListener('click', e => {
+    if (e.target.classList.contains('del-btn')) {
+      deleteTask(parseInt(e.target.dataset.index));
+    }
+  });
+
+  fetchTasks();
+</script>
+</body>
+</html>
